@@ -364,7 +364,7 @@ class KMedians(ClusterMixin, BaseEstimator):
         self._update_inertia()
         inertia = self.inertia_
 
-        for _ in range(10):
+        for _ in range(25):
             idx = rd.choice(X.shape[0], size=self.n_clusters, replace=False)
             self.cluster_centers_ = X[idx, :]
 
