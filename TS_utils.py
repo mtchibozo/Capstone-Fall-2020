@@ -355,28 +355,19 @@ class KMedians(ClusterMixin, BaseEstimator):
 
     
     def _init_centers(self, X):
-        idx = rd.choice(X.shape[0], size=self.n_clusters, replace=False)
-        self.cluster_centers_ = X[idx, :]
-        cluster_centers_ = X[idx, :]
+        idx = []
+        idx.append(rd.choice(X.shape[0]))
 
-        self.dist = np.empty((X.shape[0],self.n_clusters))
-        self._update_dist_labels(X)
-        self._update_inertia()
-        inertia = self.inertia_
-
-        for _ in range(25):
-            idx = rd.choice(X.shape[0], size=self.n_clusters, replace=False)
+        for k in range(1, self.n_clusters+1):
             self.cluster_centers_ = X[idx, :]
+            self.dist = np.empty((X.shape[0], k))
 
-            self._update_dist_labels(X)
-            self._update_inertia()
-            if self.inertia_ < inertia:
-                cluster_centers_ = self.cluster_centers_
-                inertia = self.inertia_
+            for i in range(X.shape[0]):
+                self.dist[i,:] = np.sum( np.abs(X[i,:] - self.cluster_centers_), axis=1 )
 
-        self.cluster_centers_ = cluster_centers_
-        self.inertia_ = inertia
-        del(cluster_centers_)
+            idx.append( np.argmax(self.dist.min(axis=1)) )
+
+        del(idx)
 
 
     def _update_dist_labels(self, X):
@@ -385,9 +376,11 @@ class KMedians(ClusterMixin, BaseEstimator):
 
         self.labels_ = np.argmin(self.dist, axis=1)
 
+
     def _update_centers(self, X):
         for k in range(self.n_clusters):
             self.cluster_centers_[k,:] = np.median(X[self.labels_==k,:], axis=0)
+            
 
     def _update_inertia(self):
         self.inertia_ = 0
