@@ -56,3 +56,63 @@ class TS_generator:
       close_array[i,:] = self.list_df[i]['Adj Close'].to_numpy()
 
     return close_array
+
+from scipy.fftpack import idct
+
+class Synthetic_TS_generator:
+    def __init__(self,nb_timeseries=3000,chunk_size=60,long_scale=True,short_scale=True,noise=False):
+        self.nb_timeseries = nb_timeseries
+        self.chunk_size = chunk_size
+        self.long_scale = long_scale
+        self.short_scale = short_scale
+        self.noise = noise
+        self.low_freq_range = (1,min(4,chunk_size))
+        self.high_freq_range = (min(7,chunk_size),min(10,chunk_size))
+        self.noise_freq_range = (min(15,chunk_size),chunk_size)
+        self.dct_coefs = np.zeros((nb_timeseries,chunk_size))
+        self.time_series = None
+        #Build the random time series
+        self.build_()
+        
+    def scale(self, matrix):
+        norm_matrix = matrix.copy()
+        for row in range(matrix.shape[0]):
+            norm_matrix[row,:] = (matrix[row,:]-np.min(matrix[row,:]))/(np.max(matrix[row,:])-np.min(matrix[row,:]))
+        return norm_matrix
+
+        
+    def build_(self):
+
+        #Build long scale
+        if self.long_scale == True:
+            long_scale_coef_limit_0 = self.low_freq_range[0]
+            long_scale_coef_limit_1 = self.low_freq_range[1]
+            long_scale_coefs_idx = np.random.multinomial(1, [1/(long_scale_coef_limit_1-long_scale_coef_limit_0)]*(long_scale_coef_limit_1-long_scale_coef_limit_0),size=self.nb_timeseries) #pick a long scale coefficient at random
+            long_scale_coefs_vals = np.random.uniform(low=-2,high=2,size=self.nb_timeseries)
+            long_scale_coefs = np.multiply(long_scale_coefs_vals.reshape(-1,1),long_scale_coefs_idx)
+            self.dct_coefs[:,long_scale_coef_limit_0:long_scale_coef_limit_1] = long_scale_coefs
+
+        #Build short scale
+        if self.short_scale == True:
+            short_scale_coef_limit_0 = self.high_freq_range[0]
+            short_scale_coef_limit_1 = self.high_freq_range[1]
+            short_scale_coefs_idx = np.random.multinomial(1, [1/(short_scale_coef_limit_1-short_scale_coef_limit_0)]*(short_scale_coef_limit_1-short_scale_coef_limit_0),size=self.nb_timeseries) #pick a long scale coefficient at random
+            short_scale_coefs_vals = np.multiply(long_scale_coefs_vals/2,np.random.binomial(n=1,p=0.5,size=self.nb_timeseries)*2-np.ones(self.nb_timeseries))
+            short_scale_coefs = np.multiply(short_scale_coefs_vals.reshape(-1,1),short_scale_coefs_idx)
+            self.dct_coefs[:,short_scale_coef_limit_0:short_scale_coef_limit_1] = short_scale_coefs
+
+        #Build noise
+        if self.noise == True:
+            noise_scale_coef_limit_0 = self.noise_freq_range[0]
+            noise_scale_coef_limit_1 = self.noise_freq_range[1]
+            noise_scale_coefs_idx = np.random.multinomial(3, [1/(noise_scale_coef_limit_1-noise_scale_coef_limit_0)]*(noise_scale_coef_limit_1-noise_scale_coef_limit_0),size=self.nb_timeseries) #pick a long scale coefficient at random
+            noise_scale_coefs_vals = np.multiply(long_scale_coefs_vals/6,np.random.binomial(n=1,p=0.5,size=self.nb_timeseries)*2-np.ones(self.nb_timeseries))
+            noise_scale_coefs = np.multiply(noise_scale_coefs_vals.reshape(-1,1),noise_scale_coefs_idx)
+            self.dct_coefs[:,noise_scale_coef_limit_0:noise_scale_coef_limit_1] = noise_scale_coefs
+
+
+    def get_array(self):
+        self.time_series = self.scale(idct(self.dct_coefs))
+        return self.time_series
+        
+        
