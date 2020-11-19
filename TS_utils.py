@@ -288,7 +288,7 @@ class Synthetic_TS_generator:
      dct_coefs: np.array (default np.zeros((nb_timeseries,chunk_size)))
      Dataset containing the DCT coefficients associated to the synthetic time series.
      
-     time_series: np.array (default None)
+     time_series: np.array (default np.zeros((nb_timeseries,chunk_size)))
      Dataset containing the synthetic time series. The time series are Min-Max scaled.
      time series = inverse DCT (DCT coefficients).
 
@@ -310,7 +310,7 @@ class Synthetic_TS_generator:
         self.high_freq_range = (min(7,chunk_size),min(10,chunk_size))
         self.noise_freq_range = (min(15,chunk_size),chunk_size)
         self.dct_coefs = np.zeros((nb_timeseries,chunk_size))
-        self.time_series = None
+        self.time_series = np.zeros((nb_timeseries,chunk_size))
         #Build the random time series
         self.build_()
         
