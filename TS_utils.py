@@ -238,6 +238,123 @@ class DCT_lowpass_filter:
 
 
 
+from scipy.fftpack import idct
+
+class Synthetic_TS_generator:
+    """
+    author:@mtchibozo
+    date:11/19/2020
+    
+    
+    This class generates random time series with multiscale patterns.
+    To ensure multiscale properties, we create one low frequency and one high frequency DCT coefficient while mainting all other coefficients to zero. We also add an attribute to add noise to the smooth signal.
+    Possible impovement: as is, the code only uses 60 coefficients (or context_scale). We could introduce more coefficients to generate a more complex time series, then subsample a time series of length context_scale.
+    
+    
+    Parameters
+    ----------
+   
+    
+    Attributes
+    ----------
+    nb_coefs: int
+    The number of DCT coefficients which are kept for the DCT transform (all other coefficients are set to zero).
+    nb_coefs = 13 was determined after applying the elbow method to the plot of np.linalg.norm(X-X_smoothed) with varying values of nb_coefs.
+    
+     nb_timeseries: int (default 3000) 
+     Number of multiscale synthetic time series we want to generate.
+     
+     chunk_size: int (default 60)
+     Length of each synthetic time series.
+     
+     long_scale: Boolean (default True)
+     Whether or not we want a long scale trend in the signal (=low frequency).
+     
+     short_scale: Boolean (default True)
+     Whether or not we want a short scale trend in the signal (=high frequency)
+     
+     noise: Boolean (default False)
+     Whether or not we want noise in the signal (=very high frequency).
+     
+     low_freq_range: tuple (default (1,min(4,chunk_size))
+     Range of DCT coefficients which we consider for the long scale.
+     
+     high_freq_range: tuple (default (min(7,chunk_size),min(10,chunk_size)))
+     Range of DCT coefficients which we consider for the short scale.
+     
+     noise_freq_range: tuple (default (min(15,chunk_size),chunk_size))
+     Range of DCT coefficients which we consider for noise
+     
+     dct_coefs: np.array (default np.zeros((nb_timeseries,chunk_size)))
+     Dataset containing the DCT coefficients associated to the synthetic time series.
+     
+     time_series: np.array (default None)
+     Dataset containing the synthetic time series. The time series are Min-Max scaled.
+     time series = inverse DCT (DCT coefficients).
+
+        Example
+    -------
+    >>> stg = Synthetic_TS_generator(noise=True)
+    >>> X_synthetic = stg.get_array()
+
+    
+    """
+
+    def __init__(self,nb_timeseries=3000,chunk_size=60,long_scale=True,short_scale=True,noise=False):
+        self.nb_timeseries = nb_timeseries
+        self.chunk_size = chunk_size
+        self.long_scale = long_scale
+        self.short_scale = short_scale
+        self.noise = noise
+        self.low_freq_range = (1,min(4,chunk_size))
+        self.high_freq_range = (min(7,chunk_size),min(10,chunk_size))
+        self.noise_freq_range = (min(15,chunk_size),chunk_size)
+        self.dct_coefs = np.zeros((nb_timeseries,chunk_size))
+        self.time_series = None
+        #Build the random time series
+        self.build_()
+        
+    def scale(self, matrix):
+        norm_matrix = matrix.copy()
+        for row in range(matrix.shape[0]):
+            norm_matrix[row,:] = (matrix[row,:]-np.min(matrix[row,:]))/(np.max(matrix[row,:])-np.min(matrix[row,:]))
+        return norm_matrix
+
+        
+    def build_(self):
+
+        #Build long scale
+        if self.long_scale == True:
+            long_scale_coef_limit_0 = self.low_freq_range[0]
+            long_scale_coef_limit_1 = self.low_freq_range[1]
+            long_scale_coefs_idx = np.random.multinomial(1, [1/(long_scale_coef_limit_1-long_scale_coef_limit_0)]*(long_scale_coef_limit_1-long_scale_coef_limit_0),size=self.nb_timeseries) #pick a long scale coefficient at random
+            long_scale_coefs_vals = np.random.uniform(low=-2,high=2,size=self.nb_timeseries)
+            long_scale_coefs = np.multiply(long_scale_coefs_vals.reshape(-1,1),long_scale_coefs_idx)
+            self.dct_coefs[:,long_scale_coef_limit_0:long_scale_coef_limit_1] = long_scale_coefs
+
+        #Build short scale
+        if self.short_scale == True:
+            short_scale_coef_limit_0 = self.high_freq_range[0]
+            short_scale_coef_limit_1 = self.high_freq_range[1]
+            short_scale_coefs_idx = np.random.multinomial(1, [1/(short_scale_coef_limit_1-short_scale_coef_limit_0)]*(short_scale_coef_limit_1-short_scale_coef_limit_0),size=self.nb_timeseries) #pick a long scale coefficient at random
+            short_scale_coefs_vals = np.multiply(long_scale_coefs_vals/2,np.random.binomial(n=1,p=0.5,size=self.nb_timeseries)*2-np.ones(self.nb_timeseries))
+            short_scale_coefs = np.multiply(short_scale_coefs_vals.reshape(-1,1),short_scale_coefs_idx)
+            self.dct_coefs[:,short_scale_coef_limit_0:short_scale_coef_limit_1] = short_scale_coefs
+
+        #Build noise
+        if self.noise == True:
+            noise_scale_coef_limit_0 = self.noise_freq_range[0]
+            noise_scale_coef_limit_1 = self.noise_freq_range[1]
+            noise_scale_coefs_idx = np.random.multinomial(3, [1/(noise_scale_coef_limit_1-noise_scale_coef_limit_0)]*(noise_scale_coef_limit_1-noise_scale_coef_limit_0),size=self.nb_timeseries) #pick a long scale coefficient at random
+            noise_scale_coefs_vals = np.multiply(long_scale_coefs_vals/6,np.random.binomial(n=1,p=0.5,size=self.nb_timeseries)*2-np.ones(self.nb_timeseries))
+            noise_scale_coefs = np.multiply(noise_scale_coefs_vals.reshape(-1,1),noise_scale_coefs_idx)
+            self.dct_coefs[:,noise_scale_coef_limit_0:noise_scale_coef_limit_1] = noise_scale_coefs
+
+
+    def get_array(self):
+        self.time_series = self.scale(idct(self.dct_coefs))
+        return self.time_series
+        
 
 
 class KMedians(ClusterMixin, BaseEstimator):
