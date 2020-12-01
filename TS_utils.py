@@ -276,10 +276,10 @@ class Synthetic_TS_generator:
      noise: Boolean (default False)
      Whether or not we want noise in the signal (=very high frequency).
      
-     low_freq_range: tuple (default (1,min(4,chunk_size))
+     low_freq_range: tuple (default (1,min(3,chunk_size))
      Range of DCT coefficients which we consider for the long scale.
      
-     high_freq_range: tuple (default (min(7,chunk_size),min(10,chunk_size)))
+     high_freq_range: tuple (default (min(8,chunk_size),min(10,chunk_size)))
      Range of DCT coefficients which we consider for the short scale.
      
      noise_freq_range: tuple (default (min(15,chunk_size),chunk_size))
@@ -307,7 +307,7 @@ class Synthetic_TS_generator:
         self.short_scale = short_scale
         self.noise = noise
         self.low_freq_range = (1,min(4,chunk_size))
-        self.high_freq_range = (min(7,chunk_size),min(10,chunk_size))
+        self.high_freq_range = (min(8,chunk_size),min(10,chunk_size))
         self.noise_freq_range = (min(15,chunk_size),chunk_size)
         self.dct_coefs = np.zeros((nb_timeseries,chunk_size))
         self.time_series = np.zeros((nb_timeseries,chunk_size))
