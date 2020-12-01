@@ -326,7 +326,7 @@ class Synthetic_TS_generator:
         #Build long scale
         long_scale_coef_limit_0 = self.low_freq_range[0]
         long_scale_coef_limit_1 = self.low_freq_range[1]
-        long_scale_coefs_idx = np.random.multinomial(long_scale_coef_limit_1-long_scale_coef_limit_0 + 1, [1/(long_scale_coef_limit_1-long_scale_coef_limit_0)]*(long_scale_coef_limit_1-long_scale_coef_limit_0),size=self.nb_timeseries) #pick a long scale coefficient at random
+        long_scale_coefs_idx = np.random.multinomial(long_scale_coef_limit_1-long_scale_coef_limit_0, [1/(long_scale_coef_limit_1-long_scale_coef_limit_0)]*(long_scale_coef_limit_1-long_scale_coef_limit_0),size=self.nb_timeseries) #pick a long scale coefficient at random
         long_scale_coefs_vals = np.random.uniform(low=-2,high=2,size=self.nb_timeseries)
         
         long_scale_coefs = np.multiply(long_scale_coefs_vals.reshape(-1,1),long_scale_coefs_idx)
@@ -336,7 +336,7 @@ class Synthetic_TS_generator:
         #Build short scale
         short_scale_coef_limit_0 = self.high_freq_range[0]
         short_scale_coef_limit_1 = self.high_freq_range[1]
-        short_scale_coefs_idx = np.random.multinomial(short_scale_coef_limit_1-short_scale_coef_limit_0 + 1, [1/(short_scale_coef_limit_1-short_scale_coef_limit_0)]*(short_scale_coef_limit_1-short_scale_coef_limit_0),size=self.nb_timeseries) #pick a long scale coefficient at random
+        short_scale_coefs_idx = np.random.multinomial(short_scale_coef_limit_1-short_scale_coef_limit_0, [1/(short_scale_coef_limit_1-short_scale_coef_limit_0)]*(short_scale_coef_limit_1-short_scale_coef_limit_0),size=self.nb_timeseries) #pick a long scale coefficient at random
         short_scale_coefs_vals = np.multiply(long_scale_coefs_vals/2,np.random.binomial(n=1,p=0.5,size=self.nb_timeseries)*2-np.ones(self.nb_timeseries))
         short_scale_coefs = np.multiply(short_scale_coefs_vals.reshape(-1,1),short_scale_coefs_idx)
         if self.short_scale == True:
