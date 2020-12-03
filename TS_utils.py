@@ -314,9 +314,10 @@ class Synthetic_TS_generator:
         #Build the random time series
         self.build_()
         
-    def scale(self, matrix):
+    def scale(self, matrix): #Do standard scaling before the minmax!
         norm_matrix = matrix.copy()
         for row in range(matrix.shape[0]):
+            norm_matrix[row,:] = (matrix[row,:]-np.mean(matrix[row,:]))/(np.std(matrix[row,:]))
             norm_matrix[row,:] = (matrix[row,:]-np.min(matrix[row,:]))/(np.max(matrix[row,:])-np.min(matrix[row,:]))
         return norm_matrix
 
