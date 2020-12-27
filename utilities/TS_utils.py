@@ -68,7 +68,7 @@ class TS_generator:
         total_len = 0
 
         for stock in self.symbols:
-            TS = pd.read_csv('data/'+stock+'.csv')
+            TS = pd.read_csv('../data/'+stock+'.csv')
             TS_list.append(TS)
             indexes += list(range(total_len, total_len + len(TS) - self.chunk_size))
             total_len += len(TS)
