@@ -51,7 +51,7 @@ class TS_generator:
         self.nb_timeseries = nb_timeseries
 
         #Retrieve the stocks names
-        self.symbols = pd.read_csv('https://raw.githubusercontent.com/Amelrich/Capstone-Fall-2020/master/sp500.csv', index_col=False)
+        self.symbols = pd.read_csv('https://raw.githubusercontent.com/Amelrich/Capstone-Fall-2020/master/data/sp500.csv', index_col=False)
         self.symbols = list(self.symbols['Symbol'].values)
         self.symbols = ['BF-B' if x=='BF.B' else x for x in self.symbols]
         self.symbols = ['BRK-B' if x=='BRK.B' else x for x in self.symbols]
