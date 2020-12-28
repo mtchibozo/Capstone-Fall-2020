@@ -502,7 +502,6 @@ class KMedians(ClusterMixin, BaseEstimator):
         for k in range(self.n_clusters):
             self.cluster_centers_[k,:] = np.median(X[self.labels_==k,:], axis=0)
             
-
     def _update_inertia(self):
         self.inertia_ = 0
         for k in range(self.n_clusters):
