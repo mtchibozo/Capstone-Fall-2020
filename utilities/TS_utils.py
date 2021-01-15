@@ -506,3 +506,20 @@ class KMedians(ClusterMixin, BaseEstimator):
         self.inertia_ = 0
         for k in range(self.n_clusters):
             self.inertia_ += np.sum(self.dist[self.labels_ == k,k])
+
+def scale_min_max(ts):
+    """
+    author: @hritik25
+    """
+    return (ts - ts.min(axis=1).reshape(-1, 1))/ts.ptp(axis=1).reshape(-1, 1)
+
+def weight_ts(ts, reverse=False, alpha=1.2):
+    """
+    author: @hritik25
+    """
+    if reverse: # weights increase as you go back in time
+        weights = np.array([np.sqrt(alpha**(ts.shape[1] - i)) for i in range(ts.shape[1])])
+    else:
+        weights = np.array([np.sqrt(alpha**(i+1)) for i in range(ts.shape[1])])
+    result = np.multiply(ts, weights)
+    return np.square(weights), result
