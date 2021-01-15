@@ -71,7 +71,7 @@ class TS_generator:
             try:
                 TS = pd.read_csv('../data/'+stock+'.csv')
             except:
-                continue
+                TS = pd.read_csv('./data/'+stock+'.csv')
             TS_list.append(TS)
             indexes += list(range(total_len, total_len + len(TS) - self.chunk_size))
             total_len += len(TS)
