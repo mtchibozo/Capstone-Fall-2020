@@ -59,9 +59,9 @@ To evaluate whether our clusters capture multiscale we used PIP Permutation entr
 
 All the preprocessing methods and multiscale evaluation notebooks can be found in their respective folder
 
-### Publications
+### Presentations
 
-(to be updated)
+A presentation of our findings is available [here](https://www.youtube.com/watch?v=Oe-qwGFXC3I).
 
 
 
